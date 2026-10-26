@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_4d22722816fbef1b975a0a0679ced78b {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_4d22722816fbef1b975a0a0679ced78b" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_4d22722816fbef1b975a0a0679ced78b = L.map(
+                "map_4d22722816fbef1b975a0a0679ced78b",
+                {
+                    center: [39.5373517, 23.793759299999998],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 12,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_664542d9d6e1f0b4ea80429e32efed93 = L.tileLayer(
+                "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u00a9 Stadia Maps, \u00a9 OpenMapTiles, \u00a9 OpenStreetMap contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_664542d9d6e1f0b4ea80429e32efed93.addTo(map_4d22722816fbef1b975a0a0679ced78b);
+        
+    
+            var marker_eb76170f570ce1078976bfe87365c393 = L.marker(
+                [40.67751, 22.93477],
+                {
+}
+            ).addTo(map_4d22722816fbef1b975a0a0679ced78b);
+        
+    
+            var icon_8c9b4615fbc46e1225b5d2019a3c1586 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_376b568016ecabaf84536460cef55618 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_8449ac0cf996b82a053b69169c0c28cf = $(`<div id="html_8449ac0cf996b82a053b69169c0c28cf" style="width: 100.0%; height: 100.0%;"><b>Ranking:</b> 1<br><b>Alojamiento:</b> #3 Ioanna Apartments<br><b>Precio:</b> 50.50 €</div>`)[0];
+                popup_376b568016ecabaf84536460cef55618.setContent(html_8449ac0cf996b82a053b69169c0c28cf);
+            
+        
+
+        marker_eb76170f570ce1078976bfe87365c393.bindPopup(popup_376b568016ecabaf84536460cef55618)
+        ;
+
+        
+    
+    
+            marker_eb76170f570ce1078976bfe87365c393.bindTooltip(
+                `<div>
+                     Puesto 1: #3 Ioanna Apartments
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_eb76170f570ce1078976bfe87365c393.setIcon(icon_8c9b4615fbc46e1225b5d2019a3c1586);
+            
+    
+            var marker_7d56898306241e0243c86a63e46bc496 = L.marker(
+                [40.63161, 22.95038],
+                {
+}
+            ).addTo(map_4d22722816fbef1b975a0a0679ced78b);
+        
+    
+            var icon_4779c4777e2304414543eabafa62aea1 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_5162502190d1f1eb643f9bc79966608c = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_f6ad4099096622a9a33ffc7c5922c690 = $(`<div id="html_f6ad4099096622a9a33ffc7c5922c690" style="width: 100.0%; height: 100.0%;"><b>Ranking:</b> 2<br><b>Alojamiento:</b> Urban Luxury in the heart of SKG<br><b>Precio:</b> 50.54 €</div>`)[0];
+                popup_5162502190d1f1eb643f9bc79966608c.setContent(html_f6ad4099096622a9a33ffc7c5922c690);
+            
+        
+
+        marker_7d56898306241e0243c86a63e46bc496.bindPopup(popup_5162502190d1f1eb643f9bc79966608c)
+        ;
+
+        
+    
+    
+            marker_7d56898306241e0243c86a63e46bc496.bindTooltip(
+                `<div>
+                     Puesto 2: Urban Luxury in the heart of SKG
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_7d56898306241e0243c86a63e46bc496.setIcon(icon_4779c4777e2304414543eabafa62aea1);
+            
+    
+            var marker_bcf0796b572c992111be4fbd0514e83d = L.marker(
+                [40.648491, 22.945169],
+                {
+}
+            ).addTo(map_4d22722816fbef1b975a0a0679ced78b);
+        
+    
+            var icon_62d8f4a4b9b95d12954d7d50e66d967f = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_6c34caa2ef63a17bec2ae8c7f8341d44 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_c97e1dbabee947ca937aa15f72fbf313 = $(`<div id="html_c97e1dbabee947ca937aa15f72fbf313" style="width: 100.0%; height: 100.0%;"><b>Ranking:</b> 3<br><b>Alojamiento:</b> Apartment with courtyard<br><b>Precio:</b> 51.00 €</div>`)[0];
+                popup_6c34caa2ef63a17bec2ae8c7f8341d44.setContent(html_c97e1dbabee947ca937aa15f72fbf313);
+            
+        
+
+        marker_bcf0796b572c992111be4fbd0514e83d.bindPopup(popup_6c34caa2ef63a17bec2ae8c7f8341d44)
+        ;
+
+        
+    
+    
+            marker_bcf0796b572c992111be4fbd0514e83d.bindTooltip(
+                `<div>
+                     Puesto 3: Apartment with courtyard
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_bcf0796b572c992111be4fbd0514e83d.setIcon(icon_62d8f4a4b9b95d12954d7d50e66d967f);
+            
+    
+            var marker_0c1c745fc3941d95bdd2985a188ce638 = L.marker(
+                [40.666195, 22.903892],
+                {
+}
+            ).addTo(map_4d22722816fbef1b975a0a0679ced78b);
+        
+    
+            var icon_f2daf8af6934c026fbbf6b056d576343 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_596599bced19ed40225e326248145e4c = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_7b8c377b003186c7367496599ec172b7 = $(`<div id="html_7b8c377b003186c7367496599ec172b7" style="width: 100.0%; height: 100.0%;"><b>Ranking:</b> 4<br><b>Alojamiento:</b> #D Ioanna Apartments<br><b>Precio:</b> 51.00 €</div>`)[0];
+                popup_596599bced19ed40225e326248145e4c.setContent(html_7b8c377b003186c7367496599ec172b7);
+            
+        
+
+        marker_0c1c745fc3941d95bdd2985a188ce638.bindPopup(popup_596599bced19ed40225e326248145e4c)
+        ;
+
+        
+    
+    
+            marker_0c1c745fc3941d95bdd2985a188ce638.bindTooltip(
+                `<div>
+                     Puesto 4: #D Ioanna Apartments
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_0c1c745fc3941d95bdd2985a188ce638.setIcon(icon_f2daf8af6934c026fbbf6b056d576343);
+            
+    
+            var marker_8c0506bb527142e1f09d80590bcc4f15 = L.marker(
+                [37.990167, 23.738547],
+                {
+}
+            ).addTo(map_4d22722816fbef1b975a0a0679ced78b);
+        
+    
+            var icon_1789387f687d5c6b6bb585fa736f55f0 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_f16d884ecbd1a9ff3e9a4facc01a63a5 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_535b184b525b0530ff5bddaa266eb7e9 = $(`<div id="html_535b184b525b0530ff5bddaa266eb7e9" style="width: 100.0%; height: 100.0%;"><b>Ranking:</b> 5<br><b>Alojamiento:</b> Urban Folks | Panorama Apartment<br><b>Precio:</b> 51.00 €</div>`)[0];
+                popup_f16d884ecbd1a9ff3e9a4facc01a63a5.setContent(html_535b184b525b0530ff5bddaa266eb7e9);
+            
+        
+
+        marker_8c0506bb527142e1f09d80590bcc4f15.bindPopup(popup_f16d884ecbd1a9ff3e9a4facc01a63a5)
+        ;
+
+        
+    
+    
+            marker_8c0506bb527142e1f09d80590bcc4f15.bindTooltip(
+                `<div>
+                     Puesto 5: Urban Folks | Panorama Apartment
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_8c0506bb527142e1f09d80590bcc4f15.setIcon(icon_1789387f687d5c6b6bb585fa736f55f0);
+            
+    
+            var marker_e9414bf0f8b530869b2de6050baffdce = L.marker(
+                [36.422149, 25.434488],
+                {
+}
+            ).addTo(map_4d22722816fbef1b975a0a0679ced78b);
+        
+    
+            var icon_89898cd7a8fad6c6a3f59eee3532d048 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_1ce9df946d956ff2033c1be9655c2ec1 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_e4e8d037a49cbabe335cfb9f340e6828 = $(`<div id="html_e4e8d037a49cbabe335cfb9f340e6828" style="width: 100.0%; height: 100.0%;"><b>Ranking:</b> 6<br><b>Alojamiento:</b> Walk to Κastra and Center<br><b>Precio:</b> 51.00 €</div>`)[0];
+                popup_1ce9df946d956ff2033c1be9655c2ec1.setContent(html_e4e8d037a49cbabe335cfb9f340e6828);
+            
+        
+
+        marker_e9414bf0f8b530869b2de6050baffdce.bindPopup(popup_1ce9df946d956ff2033c1be9655c2ec1)
+        ;
+
+        
+    
+    
+            marker_e9414bf0f8b530869b2de6050baffdce.bindTooltip(
+                `<div>
+                     Puesto 6: Walk to Κastra and Center
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_e9414bf0f8b530869b2de6050baffdce.setIcon(icon_89898cd7a8fad6c6a3f59eee3532d048);
+            
+    
+            var marker_835fc040ccee15a52b1d33a948fb3a7a = L.marker(
+                [40.647467, 22.939562],
+                {
+}
+            ).addTo(map_4d22722816fbef1b975a0a0679ced78b);
+        
+    
+            var icon_731f922c0416a6db6334bb266a825b46 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_3cfe65a34c6c89460d497fa3c29f6875 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_761d75125390e3764d969d9c44c9fbcd = $(`<div id="html_761d75125390e3764d969d9c44c9fbcd" style="width: 100.0%; height: 100.0%;"><b>Ranking:</b> 7<br><b>Alojamiento:</b> Το σπιτάκι της Αθηνάς<br><b>Precio:</b> 51.30 €</div>`)[0];
+                popup_3cfe65a34c6c89460d497fa3c29f6875.setContent(html_761d75125390e3764d969d9c44c9fbcd);
+            
+        
+
+        marker_835fc040ccee15a52b1d33a948fb3a7a.bindPopup(popup_3cfe65a34c6c89460d497fa3c29f6875)
+        ;
+
+        
+    
+    
+            marker_835fc040ccee15a52b1d33a948fb3a7a.bindTooltip(
+                `<div>
+                     Puesto 7: Το σπιτάκι της Αθηνάς
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_835fc040ccee15a52b1d33a948fb3a7a.setIcon(icon_731f922c0416a6db6334bb266a825b46);
+            
+    
+            var marker_b1b415f8e6ecd6b962ca3ff9d4a5f272 = L.marker(
+                [40.6203, 22.95708],
+                {
+}
+            ).addTo(map_4d22722816fbef1b975a0a0679ced78b);
+        
+    
+            var icon_4bdc375bdac74bf1f472034f5162d37d = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_38a0d31306b94bd80efeb569ea979512 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_95c306814d21e6f879c1033e4b3ecf09 = $(`<div id="html_95c306814d21e6f879c1033e4b3ecf09" style="width: 100.0%; height: 100.0%;"><b>Ranking:</b> 8<br><b>Alojamiento:</b> Aggelos Apartment<br><b>Precio:</b> 52.00 €</div>`)[0];
+                popup_38a0d31306b94bd80efeb569ea979512.setContent(html_95c306814d21e6f879c1033e4b3ecf09);
+            
+        
+
+        marker_b1b415f8e6ecd6b962ca3ff9d4a5f272.bindPopup(popup_38a0d31306b94bd80efeb569ea979512)
+        ;
+
+        
+    
+    
+            marker_b1b415f8e6ecd6b962ca3ff9d4a5f272.bindTooltip(
+                `<div>
+                     Puesto 8: Aggelos Apartment
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_b1b415f8e6ecd6b962ca3ff9d4a5f272.setIcon(icon_4bdc375bdac74bf1f472034f5162d37d);
+            
+    
+            var marker_e6f08bbbd58d8e97c351216a3f541382 = L.marker(
+                [40.644666, 22.92359],
+                {
+}
+            ).addTo(map_4d22722816fbef1b975a0a0679ced78b);
+        
+    
+            var icon_7bccf772b56268bfd607c330a57fa950 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_f90c4caf78d1f481fed83e24caf74a7c = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_d16804e0c4e726fd2aacb6abe0bfe2c2 = $(`<div id="html_d16804e0c4e726fd2aacb6abe0bfe2c2" style="width: 100.0%; height: 100.0%;"><b>Ranking:</b> 9<br><b>Alojamiento:</b> Thea Apartments "Ione"<br><b>Precio:</b> 52.00 €</div>`)[0];
+                popup_f90c4caf78d1f481fed83e24caf74a7c.setContent(html_d16804e0c4e726fd2aacb6abe0bfe2c2);
+            
+        
+
+        marker_e6f08bbbd58d8e97c351216a3f541382.bindPopup(popup_f90c4caf78d1f481fed83e24caf74a7c)
+        ;
+
+        
+    
+    
+            marker_e6f08bbbd58d8e97c351216a3f541382.bindTooltip(
+                `<div>
+                     Puesto 9: Thea Apartments "Ione"
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_e6f08bbbd58d8e97c351216a3f541382.setIcon(icon_7bccf772b56268bfd607c330a57fa950);
+            
+    
+            var marker_e2bcf09db151c89b176b19a79b4e818b = L.marker(
+                [36.424962, 28.210115],
+                {
+}
+            ).addTo(map_4d22722816fbef1b975a0a0679ced78b);
+        
+    
+            var icon_1b29394a4a9af4e844446923e8d5de3d = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_9e3d36aebd99ce9ba40588a277e33254 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_9f2f65f9c9321ef80ef2635843224ba7 = $(`<div id="html_9f2f65f9c9321ef80ef2635843224ba7" style="width: 100.0%; height: 100.0%;"><b>Ranking:</b> 10<br><b>Alojamiento:</b> Aristotelous Downtown Suites#303<br><b>Precio:</b> 52.00 €</div>`)[0];
+                popup_9e3d36aebd99ce9ba40588a277e33254.setContent(html_9f2f65f9c9321ef80ef2635843224ba7);
+            
+        
+
+        marker_e2bcf09db151c89b176b19a79b4e818b.bindPopup(popup_9e3d36aebd99ce9ba40588a277e33254)
+        ;
+
+        
+    
+    
+            marker_e2bcf09db151c89b176b19a79b4e818b.bindTooltip(
+                `<div>
+                     Puesto 10: Aristotelous Downtown Suites#303
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_e2bcf09db151c89b176b19a79b4e818b.setIcon(icon_1b29394a4a9af4e844446923e8d5de3d);
+            
+    
+            map_4d22722816fbef1b975a0a0679ced78b.fitBounds(
+                [[36.422149, 22.903892], [40.67751, 28.210115]],
+                {}
+            );
+        
+</script>
+</html>

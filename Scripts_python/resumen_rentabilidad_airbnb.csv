@@ -1,0 +1,4 @@
+﻿escenario,alojamientos,ocupacion_pct,ingresos_medios_eur,costes_medios_eur,beneficio_medio_eur,margen_medio_pct
+Conservador,20,30.0,4094.36,4182.2,-87.84,-15.08
+Central,20,50.0,6774.31,6134.19,640.12,-1.66
+Optimista,20,70.0,9491.48,8113.3,1378.19,4.21

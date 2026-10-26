@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuadro de mando Airbnb Grecia</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    margin: 0;
+    background: #f1f5f9;
+    color: #1e293b;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    background: #123b55;
+    color: white;
+    padding: 28px;
+}
+
+header h1 {
+    margin-top: 0;
+}
+
+main {
+    max-width: 1450px;
+    margin: auto;
+    padding: 22px;
+}
+
+.kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 3px 12px #0000000b;
+    min-width: 0;
+}
+
+.kpi-label {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.kpi-value {
+    font-size: 27px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.charts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.chart {
+    height: 350px;
+}
+
+.chart canvas {
+    max-height: 285px;
+}
+
+.table-wrap {
+    overflow-x: auto;
+    max-height: 480px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background: white;
+    font-size: 13px;
+}
+
+th, td {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background: #eaf0f6;
+    position: sticky;
+    top: 0;
+}
+
+input {
+    padding: 10px;
+    margin: 10px 0;
+    width: min(350px, 90%);
+}
+
+button {
+    padding: 10px 15px;
+    background: #176b87;
+    color: white;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.note {
+    font-size: 12px;
+    color: #64748b;
+}
+
+@media (max-width: 800px) {
+    .charts {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Cuadro de mando · Airbnb Grecia</h1>
+    <p id="subtitulo"></p>
+</header>
+
+<main>
+
+    <p id="archivo"></p>
+
+    <section class="kpis" id="kpis"></section>
+
+    <section class="charts">
+
+        <article class="card chart">
+            <h3>Alojamientos por región</h3>
+            <canvas id="graficoRegion"></canvas>
+            <p id="sinRegion" hidden>No se detectó la columna de región.</p>
+        </article>
+
+        <article class="card chart">
+            <h3>Precio medio por región</h3>
+            <canvas id="graficoPrecioRegion"></canvas>
+            <p id="sinPrecioRegion" hidden>No hay datos suficientes.</p>
+        </article>
+
+        <article class="card chart">
+            <h3>Distribución de precios</h3>
+            <canvas id="graficoPrecios"></canvas>
+            <p id="sinPrecios" hidden>No se detectaron precios válidos.</p>
+        </article>
+
+        <article class="card chart">
+            <h3>Alojamientos por tipo</h3>
+            <canvas id="graficoTipo"></canvas>
+            <p id="sinTipo" hidden>No se detectó la columna de tipo.</p>
+        </article>
+
+    </section>
+
+    <section class="card" style="margin-bottom:20px">
+        <h2>Top 10 alojamientos más económicos</h2>
+
+        <div class="table-wrap">
+            <table id="tablaTop">
+                <thead>
+                    <tr>
+                        <th>Posición</th>
+                        <th>Alojamiento</th>
+                        <th>Región</th>
+                        <th>Tipo</th>
+                        <th>Precio</th>
+                        <th>Valoración</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <p class="note">
+            Ranking calculado a partir de los precios positivos del CSV.
+            Comprueba la moneda y el periodo de los precios originales.
+        </p>
+    </section>
+
+    <section class="card">
+        <h2>Datos del CSV</h2>
+
+        <input id="busqueda" placeholder="Buscar en la tabla...">
+
+        <div class="table-wrap">
+            <table id="tablaDatos">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <p class="note">
+            Se muestran las primeras 100 filas para facilitar la consulta.
+        </p>
+    </section>
+
+    <p style="margin-top:20px">
+        <button onclick="window.print()">Imprimir / Guardar como PDF</button>
+    </p>
+
+</main>
+
+<script>
+const D = {"archivo": "airbnb_grecia_clean.csv", "total": 73914, "columnas": ["id", "listing_url", "name", "host_id", "host_name", "host_is_superhost", "neighbourhood_cleansed", "latitude", "longitude", "room_type", "accommodates", "bedrooms", "beds", "price", "number_of_reviews", "review_scores_rating", "region_origen", "has_no_reviews", "bathrooms_num"], "precioMedio": 182.25021876775713, "precioMediano": 128.38, "precioMinimo": 12.59, "precioMaximo": 1000.0, "ratingMedio": 4.159172957761723, "datosRegion": [{"label": "Egeo", "value": 31045}, {"label": "Creta", "value": 24099}, {"label": "Atenas", "value": 14149}, {"label": "Salonica", "value": 4621}], "datosPrecioRegion": [{"label": "Salonica", "value": 93.71}, {"label": "Atenas", "value": 138.86}, {"label": "Creta", "value": 181.18}, {"label": "Egeo", "value": 216.04}], "datosTipo": [{"label": "Entire home/apt", "value": 65597}, {"label": "Private room", "value": 7620}, {"label": "Hotel room", "value": 622}, {"label": "Shared room", "value": 75}], "datosHistograma": [{"label": "13 - 78", "value": 13279}, {"label": "78 - 144", "value": 28847}, {"label": "144 - 210", "value": 12841}, {"label": "210 - 276", "value": 6476}, {"label": "276 - 342", "value": 3766}, {"label": "342 - 408", "value": 2698}, {"label": "408 - 473", "value": 1618}, {"label": "473 - 539", "value": 1152}, {"label": "539 - 605", "value": 919}, {"label": "605 - 671", "value": 589}, {"label": "671 - 737", "value": 486}, {"label": "737 - 803", "value": 389}, {"label": "803 - 868", "value": 313}, {"label": "868 - 934", "value": 305}, {"label": "934 - 1000", "value": 236}], "top": [{"nombre": "Bed in Shared Room - SmArt Shared Home #4", "region": "Atenas", "tipo": "Shared room", "precio": 12.59, "rating": 5.0}, {"nombre": "Pink Lemon @ Bed in 4 bed dorm females only", "region": "Atenas", "tipo": "Shared room", "precio": 13.82, "rating": 4.5}, {"nombre": "Bed in 4-Bed Mixed Dorm Room", "region": "Atenas", "tipo": "Shared room", "precio": 17.0, "rating": 4.07}, {"nombre": "seaside furnished but not essentials equipped apt", "region": "Creta", "tipo": "Entire home/apt", "precio": 17.19, "rating": 0.0}, {"nombre": "Bed in 4-Bed Male Dorm Room", "region": "Atenas", "tipo": "Shared room", "precio": 17.57, "rating": 3.56}, {"nombre": "Bed in 4-Bed Female Dorm Room", "region": "Atenas", "tipo": "Shared room", "precio": 18.0, "rating": 3.2}, {"nombre": "Single room", "region": "Salonica", "tipo": "Private room", "precio": 18.29, "rating": 4.71}, {"nombre": "The Little GReeNce, by Zormir! The one and only!", "region": "Salonica", "tipo": "Entire home/apt", "precio": 18.7, "rating": 4.55}, {"nombre": "1 Bed at 8 Mixed dorm at Fira Downtown", "region": "Egeo", "tipo": "Shared room", "precio": 19.0, "rating": 0.0}, {"nombre": "Pink Pinnapple@ Bed in 6 bed females only", "region": "Atenas", "tipo": "Shared room", "precio": 19.0, "rating": 4.6}], "tabla": [{"id": "25358481", "listing_url": "https://www.airbnb.com/rooms/25358481", "name": "*The Athens Green Apt*", "host_id": "434487", "host_name": "Yiorgos", "host_is_superhost": "t", "neighbourhood_cleansed": "ΝΕΟΣ ΚΟΣΜΟΣ", "latitude": 37.9552, "longitude": 23.71741, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 60.0, "number_of_reviews": 454.0, "review_scores_rating": 4.94, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.5}, {"id": "33945", "listing_url": "https://www.airbnb.com/rooms/33945", "name": "Spacious Cosy aprtm very close to Metro!", "host_id": "146553", "host_name": "Katerina", "host_is_superhost": "f", "neighbourhood_cleansed": "ΑΓΙΟΣ ΝΙΚΟΛΑΟΣ", "latitude": 38.00673, "longitude": 23.72775, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 2.0, "beds": 3.0, "price": 57.25, "number_of_reviews": 90.0, "review_scores_rating": 4.77, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "60394", "listing_url": "https://www.airbnb.com/rooms/60394", "name": "Cosy apartment! Great central Athens location!", "host_id": "290864", "host_name": "Mika", "host_is_superhost": "f", "neighbourhood_cleansed": "ΣΤΑΔΙΟ", "latitude": 37.96738, "longitude": 23.74038, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 3.0, "price": 78.5, "number_of_reviews": 38.0, "review_scores_rating": 4.97, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "154243", "listing_url": "https://www.airbnb.com/rooms/154243", "name": "LUSCIOUS ROOF GARDEN IN THE CENTER!", "host_id": "741851", "host_name": "Yagos", "host_is_superhost": "f", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.98574, "longitude": 23.73323, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 2.0, "price": 106.0, "number_of_reviews": 242.0, "review_scores_rating": 4.72, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "270611", "listing_url": "https://www.airbnb.com/rooms/270611", "name": "An Oasis in the Heart of Athens", "host_id": "1416651", "host_name": "Paul", "host_is_superhost": "f", "neighbourhood_cleansed": "ΑΓΙΟΣ ΚΩΝΣΤΑΝΤΙΝΟΣ-ΠΛΑΤΕΙΑ ΒΑΘΗΣ", "latitude": 37.98586, "longitude": 23.72432, "room_type": "Entire home/apt", "accommodates": 6.0, "bedrooms": 2.0, "beds": 8.0, "price": 60.0, "number_of_reviews": 47.0, "review_scores_rating": 4.65, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "306234", "listing_url": "https://www.airbnb.com/rooms/306234", "name": "Athens AVATON - Parthenon Suite", "host_id": "1574876", "host_name": "Agis", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97851, "longitude": 23.72479, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 451.0, "number_of_reviews": 770.0, "review_scores_rating": 4.98, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "308157", "listing_url": "https://www.airbnb.com/rooms/308157", "name": "#AH32 Grey studio", "host_id": "1585338", "host_name": "Flavia", "host_is_superhost": "t", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.98729, "longitude": 23.74311, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 0.0, "beds": 1.0, "price": 62.2, "number_of_reviews": 2.0, "review_scores_rating": 4.5, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "361393", "listing_url": "https://www.airbnb.com/rooms/361393", "name": "Hermes Historical Center apt.", "host_id": "1826598", "host_name": "Apartments Historical Centre", "host_is_superhost": "f", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97774, "longitude": 23.73, "room_type": "Entire home/apt", "accommodates": 8.0, "bedrooms": 2.0, "beds": 4.0, "price": 110.67, "number_of_reviews": 221.0, "review_scores_rating": 4.69, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "401423", "listing_url": "https://www.airbnb.com/rooms/401423", "name": "Apartment with Leafy Backyard Steps from the Acropolis", "host_id": "745805", "host_name": "Ralou", "host_is_superhost": "t", "neighbourhood_cleansed": "ΑΚΡΟΠΟΛΗ", "latitude": 37.96826, "longitude": 23.72777, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 130.5, "number_of_reviews": 646.0, "review_scores_rating": 4.92, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "469140", "listing_url": "https://www.airbnb.com/rooms/469140", "name": "Our first love #01 | Thiseio Residencies", "host_id": "2289590", "host_name": "Live In Athens Apartments", "host_is_superhost": "t", "neighbourhood_cleansed": "ΘΗΣΕΙΟ", "latitude": 37.97665, "longitude": 23.7185, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 2.0, "price": 159.5, "number_of_reviews": 119.0, "review_scores_rating": 4.78, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "474719", "listing_url": "https://www.airbnb.com/rooms/474719", "name": "Artemis Historical Center cosy apt.", "host_id": "1826598", "host_name": "Apartments Historical Centre", "host_is_superhost": "f", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97952, "longitude": 23.72999, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 1.0, "price": 124.5, "number_of_reviews": 254.0, "review_scores_rating": 4.76, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "484925", "listing_url": "https://www.airbnb.com/rooms/484925", "name": "In the shadow of Acropolis-Breathtaking view", "host_id": "2371962", "host_name": "In The Shadow Of Acropolis", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97291, "longitude": 23.72739, "room_type": "Entire home/apt", "accommodates": 5.0, "bedrooms": 2.0, "beds": 3.0, "price": 246.0, "number_of_reviews": 500.0, "review_scores_rating": 4.94, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "536123", "listing_url": "https://www.airbnb.com/rooms/536123", "name": "Acropolis Charming Apt with Large Balcony - DM17", "host_id": "1418201", "host_name": "D & Y Boutique Athens", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΟΥΚΑΚΙ-ΜΑΚΡΥΓΙΑΝΝΗ", "latitude": 37.96648, "longitude": 23.7276, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 98.09, "number_of_reviews": 67.0, "review_scores_rating": 4.66, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "536197", "listing_url": "https://www.airbnb.com/rooms/536197", "name": "Plaka: Stylish Flat Overlooking Cathedral Sq. CM1", "host_id": "1418201", "host_name": "D & Y Boutique Athens", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97506, "longitude": 23.73068, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 1.0, "beds": 1.0, "price": 130.5, "number_of_reviews": 40.0, "review_scores_rating": 4.85, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "571876", "listing_url": "https://www.airbnb.com/rooms/571876", "name": "Vintage Apartment Athens, Plaka (Historic Center)", "host_id": "2814842", "host_name": "Anna", "host_is_superhost": "f", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97538, "longitude": 23.73264, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 1.0, "beds": 2.0, "price": 95.67, "number_of_reviews": 446.0, "review_scores_rating": 4.77, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "590287", "listing_url": "https://www.airbnb.com/rooms/590287", "name": "Panoramic city view, quiet neighborhood near metro", "host_id": "2602995", "host_name": "⁨Vassilis (Βασίλης)⁩", "host_is_superhost": "t", "neighbourhood_cleansed": "ΠΡΟΜΠΟΝΑ", "latitude": 38.02512, "longitude": 23.73536, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 1.0, "beds": 2.0, "price": 54.0, "number_of_reviews": 280.0, "review_scores_rating": 4.68, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "631150", "listing_url": "https://www.airbnb.com/rooms/631150", "name": "Great design Acropolis apartment", "host_id": "3137668", "host_name": "Eyσtaθia-Σoφia", "host_is_superhost": "f", "neighbourhood_cleansed": "ΑΚΡΟΠΟΛΗ", "latitude": 37.96825, "longitude": 23.72839, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 2.0, "price": 107.0, "number_of_reviews": 239.0, "review_scores_rating": 4.87, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "644785", "listing_url": "https://www.airbnb.com/rooms/644785", "name": "Modern apartment in city centre - great location", "host_id": "2425678", "host_name": "Richard", "host_is_superhost": "t", "neighbourhood_cleansed": "ΓΚΑΖΙ", "latitude": 37.97626, "longitude": 23.7096, "room_type": "Entire home/apt", "accommodates": 5.0, "bedrooms": 3.0, "beds": 3.0, "price": 95.0, "number_of_reviews": 578.0, "review_scores_rating": 4.99, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "691025", "listing_url": "https://www.airbnb.com/rooms/691025", "name": "Value for money in Heart of Athens!", "host_id": "3514860", "host_name": "Kalliopi", "host_is_superhost": "f", "neighbourhood_cleansed": "ΣΤΑΔΙΟ", "latitude": 37.96615, "longitude": 23.73463, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 2.0, "beds": 2.0, "price": 121.0, "number_of_reviews": 64.0, "review_scores_rating": 4.79, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "695173", "listing_url": "https://www.airbnb.com/rooms/695173", "name": "Unique Central Artistic Flat Athens", "host_id": "3557919", "host_name": "Soula", "host_is_superhost": "t", "neighbourhood_cleansed": "ΝΕΟΣ ΚΟΣΜΟΣ", "latitude": 37.96341, "longitude": 23.72875, "room_type": "Entire home/apt", "accommodates": 5.0, "bedrooms": 2.0, "beds": 3.0, "price": 177.67, "number_of_reviews": 276.0, "review_scores_rating": 4.89, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 2.0}, {"id": "702480", "listing_url": "https://www.airbnb.com/rooms/702480", "name": "Modern 1BR w/ Balcony | Local Athens Neighborhood", "host_id": "2539665", "host_name": "Pygmalion", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΟΛΩΝΟΣ", "latitude": 38.0011, "longitude": 23.71626, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 3.0, "price": 65.0, "number_of_reviews": 620.0, "review_scores_rating": 4.9, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "709960", "listing_url": "https://www.airbnb.com/rooms/709960", "name": "Quiet Courtyard • 2BR • 95sqm • Acropolis Walk", "host_id": "2534881", "host_name": "Haris", "host_is_superhost": "t", "neighbourhood_cleansed": "ΘΗΣΕΙΟ", "latitude": 37.97385, "longitude": 23.71567, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 2.0, "beds": 2.0, "price": 122.5, "number_of_reviews": 183.0, "review_scores_rating": 4.79, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "711554", "listing_url": "https://www.airbnb.com/rooms/711554", "name": "By the hill", "host_id": "3625710", "host_name": "Ilias", "host_is_superhost": "t", "neighbourhood_cleansed": "ΑΚΡΟΠΟΛΗ", "latitude": 37.96286, "longitude": 23.71754, "room_type": "Entire home/apt", "accommodates": 8.0, "bedrooms": 2.0, "beds": 5.0, "price": 104.67, "number_of_reviews": 506.0, "review_scores_rating": 4.89, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "718941", "listing_url": "https://www.airbnb.com/rooms/718941", "name": "Acropolis Blue 4 Bd 4 Ba, all ensuite baths", "host_id": "2810938", "host_name": "Carole", "host_is_superhost": "t", "neighbourhood_cleansed": "ΠΑΓΚΡΑΤΙ", "latitude": 37.96688, "longitude": 23.75001, "room_type": "Entire home/apt", "accommodates": 12.0, "bedrooms": 4.0, "beds": 8.0, "price": 651.0, "number_of_reviews": 34.0, "review_scores_rating": 4.97, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 3.0}, {"id": "724485", "listing_url": "https://www.airbnb.com/rooms/724485", "name": "5th Floor Boho Quircky", "host_id": "3745284", "host_name": "Elpidoforos", "host_is_superhost": "t", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.98985, "longitude": 23.73779, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 58.33, "number_of_reviews": 572.0, "review_scores_rating": 4.8, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "727374", "listing_url": "https://www.airbnb.com/rooms/727374", "name": "Casavathel1 Athens Center Apartment", "host_id": "3756353", "host_name": "Thelma", "host_is_superhost": "t", "neighbourhood_cleansed": "ΝΙΡΒΑΝΑ", "latitude": 38.01501, "longitude": 23.72582, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 2.0, "beds": 2.0, "price": 48.0, "number_of_reviews": 676.0, "review_scores_rating": 4.83, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "767272", "listing_url": "https://www.airbnb.com/rooms/767272", "name": "Contemporary Gallery garden house", "host_id": "964919", "host_name": "Rebecca", "host_is_superhost": "f", "neighbourhood_cleansed": "ΑΓΙΟΣ ΚΩΝΣΤΑΝΤΙΝΟΣ-ΠΛΑΤΕΙΑ ΒΑΘΗΣ", "latitude": 37.98447, "longitude": 23.72112, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 2.0, "beds": 1.0, "price": 524.67, "number_of_reviews": 2.0, "review_scores_rating": 5.0, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 3.5}, {"id": "784414", "listing_url": "https://www.airbnb.com/rooms/784414", "name": "Nice Calme Apt 98m2 i Center  Athens patio  subway", "host_id": "4136310", "host_name": "Maria-Louisa", "host_is_superhost": "f", "neighbourhood_cleansed": "ΠΛΑΤΕΙΑ ΑΤΤΙΚΗΣ", "latitude": 37.9986, "longitude": 23.72828, "room_type": "Entire home/apt", "accommodates": 7.0, "bedrooms": 2.0, "beds": 1.0, "price": 116.0, "number_of_reviews": 4.0, "review_scores_rating": 3.5, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.5}, {"id": "800755", "listing_url": "https://www.airbnb.com/rooms/800755", "name": "❤️The 1 and only Acropolis penthouse!❤️", "host_id": "121318", "host_name": "Francis - Fotios", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97835, "longitude": 23.72368, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 286.0, "number_of_reviews": 518.0, "review_scores_rating": 4.95, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "807239", "listing_url": "https://www.airbnb.com/rooms/807239", "name": "Appartment @ Kypriadou district", "host_id": "4248171", "host_name": "Natasha", "host_is_superhost": "f", "neighbourhood_cleansed": "ΑΝΩ ΠΑΤΗΣΙΑ", "latitude": 38.02081, "longitude": 23.74098, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 120.0, "number_of_reviews": 4.0, "review_scores_rating": 4.75, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "809874", "listing_url": "https://www.airbnb.com/rooms/809874", "name": "Wonderfull Penthouse!!", "host_id": "4259738", "host_name": "George", "host_is_superhost": "f", "neighbourhood_cleansed": "ΚΟΥΚΑΚΙ-ΜΑΚΡΥΓΙΑΝΝΗ", "latitude": 37.96215, "longitude": 23.72179, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 2.0, "price": 116.0, "number_of_reviews": 132.0, "review_scores_rating": 4.95, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "866381", "listing_url": "https://www.airbnb.com/rooms/866381", "name": "Acropolis View Funky House", "host_id": "4551671", "host_name": "Evan", "host_is_superhost": "t", "neighbourhood_cleansed": "ΝΕΟΣ ΚΟΣΜΟΣ", "latitude": 37.95523, "longitude": 23.72443, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 1.0, "beds": 1.0, "price": 67.0, "number_of_reviews": 95.0, "review_scores_rating": 4.98, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "886724", "listing_url": "https://www.airbnb.com/rooms/886724", "name": "Luxury Boutique Appartment -Athens", "host_id": "4700824", "host_name": "Athina", "host_is_superhost": "f", "neighbourhood_cleansed": "ΚΥΨΕΛΗ", "latitude": 37.99745, "longitude": 23.73973, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 65.0, "number_of_reviews": 18.0, "review_scores_rating": 4.61, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "896212", "listing_url": "https://www.airbnb.com/rooms/896212", "name": "Living like in a cottage in the center of Athens", "host_id": "4777984", "host_name": "Romanos", "host_is_superhost": "t", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.98844, "longitude": 23.73845, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 69.0, "number_of_reviews": 599.0, "review_scores_rating": 4.95, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "974442", "listing_url": "https://www.airbnb.com/rooms/974442", "name": "View of Lycabettus • 3BR • Renovated & Spacious", "host_id": "3349638", "host_name": "Stefanos", "host_is_superhost": "t", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.98857, "longitude": 23.7464, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 3.0, "beds": 3.0, "price": 36.88, "number_of_reviews": 8.0, "review_scores_rating": 4.38, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1021237", "listing_url": "https://www.airbnb.com/rooms/1021237", "name": "Sofia’s apartment in Kolonaki", "host_id": "5620986", "host_name": "Sofia", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΟΛΩΝΑΚΙ", "latitude": 37.97866, "longitude": 23.74252, "room_type": "Entire home/apt", "accommodates": 5.0, "bedrooms": 2.0, "beds": 2.0, "price": 141.33, "number_of_reviews": 86.0, "review_scores_rating": 4.95, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1208210", "listing_url": "https://www.airbnb.com/rooms/1208210", "name": "LIVE IN STYLE UNDER THE ACROPOLIS RUINS", "host_id": "594546", "host_name": "Magda", "host_is_superhost": "t", "neighbourhood_cleansed": "ΑΚΡΟΠΟΛΗ", "latitude": 37.96845, "longitude": 23.72873, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 149.5, "number_of_reviews": 494.0, "review_scores_rating": 4.99, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1214643", "listing_url": "https://www.airbnb.com/rooms/1214643", "name": "Apartment Metro Panormou Airports Line", "host_id": "6630475", "host_name": "Ageliki", "host_is_superhost": "t", "neighbourhood_cleansed": "ΑΜΠΕΛΟΚΗΠΟΙ", "latitude": 37.99527, "longitude": 23.76651, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 2.0, "beds": 2.0, "price": 85.0, "number_of_reviews": 209.0, "review_scores_rating": 4.89, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1215055", "listing_url": "https://www.airbnb.com/rooms/1215055", "name": "House at the Foothills of Acropolis", "host_id": "13115279", "host_name": "Greece You Around", "host_is_superhost": "t", "neighbourhood_cleansed": "ΑΚΡΟΠΟΛΗ", "latitude": 37.97065, "longitude": 23.72931, "room_type": "Entire home/apt", "accommodates": 6.0, "bedrooms": 2.0, "beds": 3.0, "price": 436.0, "number_of_reviews": 331.0, "review_scores_rating": 4.99, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 2.5}, {"id": "1259830", "listing_url": "https://www.airbnb.com/rooms/1259830", "name": "Exotic Athens loft in downtown-Gazi", "host_id": "3622853", "host_name": "Anna & Teo", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΕΡΑΜΕΙΚΟΣ", "latitude": 37.98103, "longitude": 23.71538, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 1.0, "beds": 2.0, "price": 204.0, "number_of_reviews": 440.0, "review_scores_rating": 4.9, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1271620", "listing_url": "https://www.airbnb.com/rooms/1271620", "name": "Modern & comfy flat near metro ANO Petralona", "host_id": "3635281", "host_name": "Nadia", "host_is_superhost": "t", "neighbourhood_cleansed": "ΠΕΤΡΑΛΩΝΑ", "latitude": 37.9692, "longitude": 23.71073, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 50.07, "number_of_reviews": 17.0, "review_scores_rating": 5.0, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1368303", "listing_url": "https://www.airbnb.com/rooms/1368303", "name": "ROOFGARDEN CENTRAL APARTMENT NEXT TO METRO", "host_id": "7327234", "host_name": "Rita", "host_is_superhost": "f", "neighbourhood_cleansed": "ΑΜΠΕΛΟΚΗΠΟΙ", "latitude": 37.99436, "longitude": 23.76666, "room_type": "Entire home/apt", "accommodates": 6.0, "bedrooms": 2.0, "beds": 3.0, "price": 84.67, "number_of_reviews": 271.0, "review_scores_rating": 4.87, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.5}, {"id": "1372935", "listing_url": "https://www.airbnb.com/rooms/1372935", "name": "ATHENS CENTER  SYNTAGMA SQUARE", "host_id": "6330438", "host_name": "Stratos", "host_is_superhost": "f", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97587, "longitude": 23.73311, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 2.0, "beds": 3.0, "price": 162.0, "number_of_reviews": 49.0, "review_scores_rating": 4.78, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1374299", "listing_url": "https://www.airbnb.com/rooms/1374299", "name": "Casavathel2 Athens Center Apartment", "host_id": "3756353", "host_name": "Thelma", "host_is_superhost": "t", "neighbourhood_cleansed": "ΝΙΡΒΑΝΑ", "latitude": 38.01501, "longitude": 23.72582, "room_type": "Entire home/apt", "accommodates": 6.0, "bedrooms": 2.0, "beds": 2.0, "price": 69.0, "number_of_reviews": 642.0, "review_scores_rating": 4.9, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1470809", "listing_url": "https://www.airbnb.com/rooms/1470809", "name": "Filopapos Hill Apartment", "host_id": "6993450", "host_name": "Sofia", "host_is_superhost": "f", "neighbourhood_cleansed": "ΑΚΡΟΠΟΛΗ", "latitude": 37.96694, "longitude": 23.7211, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 3.0, "beds": 3.0, "price": 127.67, "number_of_reviews": 3.0, "review_scores_rating": 5.0, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 2.0}, {"id": "1473284", "listing_url": "https://www.airbnb.com/rooms/1473284", "name": "Room with Balcony in Filopapos Hill", "host_id": "6993450", "host_name": "Sofia", "host_is_superhost": "f", "neighbourhood_cleansed": "ΑΚΡΟΠΟΛΗ", "latitude": 37.96685, "longitude": 23.72056, "room_type": "Private room", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 57.5, "number_of_reviews": 15.0, "review_scores_rating": 4.73, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1484797", "listing_url": "https://www.airbnb.com/rooms/1484797", "name": "Bright Apt w/ Balcony · Koukaki · Acropolis", "host_id": "7943398", "host_name": "Vesna", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΟΥΚΑΚΙ-ΜΑΚΡΥΓΙΑΝΝΗ", "latitude": 37.9626, "longitude": 23.72075, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 2.0, "price": 92.83, "number_of_reviews": 653.0, "review_scores_rating": 4.89, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1499953", "listing_url": "https://www.airbnb.com/rooms/1499953", "name": "Luxury 150m2 in chic, safe & central Kolonaki", "host_id": "8015565", "host_name": "Michalia", "host_is_superhost": "t", "neighbourhood_cleansed": "ΛΥΚΑΒΗΤΤΟΣ", "latitude": 37.97865, "longitude": 23.74152, "room_type": "Entire home/apt", "accommodates": 6.0, "bedrooms": 2.0, "beds": 3.0, "price": 209.0, "number_of_reviews": 186.0, "review_scores_rating": 4.85, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 2.0}, {"id": "1529526", "listing_url": "https://www.airbnb.com/rooms/1529526", "name": "30 Sqm of wood & stone- Non-Smoker's Paradise", "host_id": "8158292", "host_name": "Nasir", "host_is_superhost": "f", "neighbourhood_cleansed": "ΚΟΛΩΝΟΣ", "latitude": 37.99882, "longitude": 23.7185, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 83.0, "number_of_reviews": 578.0, "review_scores_rating": 4.85, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1568065", "listing_url": "https://www.airbnb.com/rooms/1568065", "name": "Elegant Boutique Apartment Athens Kolonaki", "host_id": "8339895", "host_name": "Regina", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΟΛΩΝΑΚΙ", "latitude": 37.97708, "longitude": 23.74285, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 2.0, "price": 102.73, "number_of_reviews": 120.0, "review_scores_rating": 4.9, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.5}, {"id": "1615453", "listing_url": "https://www.airbnb.com/rooms/1615453", "name": "Modern Apartment at Gazi Area", "host_id": "8598734", "host_name": "Theodoros", "host_is_superhost": "t", "neighbourhood_cleansed": "ΒΟΤΑΝΙΚΟΣ", "latitude": 37.98322, "longitude": 23.71017, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 2.0, "price": 207.0, "number_of_reviews": 105.0, "review_scores_rating": 4.88, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1654320", "listing_url": "https://www.airbnb.com/rooms/1654320", "name": "Renovated penthouse with Stunning Views", "host_id": "1781590", "host_name": "Karolos", "host_is_superhost": "t", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.98343, "longitude": 23.73923, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 143.67, "number_of_reviews": 71.0, "review_scores_rating": 4.85, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1672696", "listing_url": "https://www.airbnb.com/rooms/1672696", "name": "Spacious 110M2  2Bedrooms 2Bathrooms Center Athens", "host_id": "8852839", "host_name": "Roni", "host_is_superhost": "t", "neighbourhood_cleansed": "ΒΟΤΑΝΙΚΟΣ", "latitude": 37.97836, "longitude": 23.70879, "room_type": "Entire home/apt", "accommodates": 6.0, "bedrooms": 2.0, "beds": 3.0, "price": 134.0, "number_of_reviews": 194.0, "review_scores_rating": 4.9, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 2.0}, {"id": "1708578", "listing_url": "https://www.airbnb.com/rooms/1708578", "name": "ground little room in strefis", "host_id": "9014897", "host_name": "Angeliki", "host_is_superhost": "t", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.98894, "longitude": 23.73873, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 0.0, "beds": 1.0, "price": 86.2, "number_of_reviews": 106.0, "review_scores_rating": 4.83, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.5}, {"id": "1734269", "listing_url": "https://www.airbnb.com/rooms/1734269", "name": "9th Heaven", "host_id": "3625710", "host_name": "Ilias", "host_is_superhost": "t", "neighbourhood_cleansed": "ΝΕΟΣ ΚΟΣΜΟΣ", "latitude": 37.95958, "longitude": 23.72467, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 0.0, "beds": 2.0, "price": 51.0, "number_of_reviews": 272.0, "review_scores_rating": 4.83, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1811588", "listing_url": "https://www.airbnb.com/rooms/1811588", "name": "Stylish loft in a historic building", "host_id": "5666079", "host_name": "Takis And Lina", "host_is_superhost": "t", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.98655, "longitude": 23.7369, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 0.0, "beds": 2.0, "price": 132.0, "number_of_reviews": 32.0, "review_scores_rating": 4.67, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 0.0}, {"id": "1826249", "listing_url": "https://www.airbnb.com/rooms/1826249", "name": "Athens panorama flat ( private room)", "host_id": "9556344", "host_name": "Dora", "host_is_superhost": "t", "neighbourhood_cleansed": "ΓΚΥΖΗ", "latitude": 37.99433, "longitude": 23.74989, "room_type": "Private room", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 59.0, "number_of_reviews": 448.0, "review_scores_rating": 4.93, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1845240", "listing_url": "https://www.airbnb.com/rooms/1845240", "name": "Courtyard apt - Central Athens", "host_id": "9640455", "host_name": "Maria", "host_is_superhost": "f", "neighbourhood_cleansed": "ΠΑΓΚΡΑΤΙ", "latitude": 37.97235, "longitude": 23.74366, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 1.0, "price": 78.0, "number_of_reviews": 392.0, "review_scores_rating": 4.75, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "1900810", "listing_url": "https://www.airbnb.com/rooms/1900810", "name": "#AH02 Kolonaki penthouse studio", "host_id": "1585338", "host_name": "Flavia", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΟΛΩΝΑΚΙ", "latitude": 37.97709, "longitude": 23.745, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 0.0, "beds": 1.0, "price": 88.4, "number_of_reviews": 19.0, "review_scores_rating": 4.68, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2025216", "listing_url": "https://www.airbnb.com/rooms/2025216", "name": "#AH31 Olive studio", "host_id": "1585338", "host_name": "Flavia", "host_is_superhost": "t", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.98729, "longitude": 23.74312, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 0.0, "beds": 2.0, "price": 69.8, "number_of_reviews": 3.0, "review_scores_rating": 4.67, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2069270", "listing_url": "https://www.airbnb.com/rooms/2069270", "name": "Hidesign Athens Tube Luxury Apt in Kolonaki", "host_id": "10581143", "host_name": "Pagona", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΟΛΩΝΑΚΙ", "latitude": 37.97763, "longitude": 23.739, "room_type": "Entire home/apt", "accommodates": 6.0, "bedrooms": 2.0, "beds": 3.0, "price": 232.0, "number_of_reviews": 151.0, "review_scores_rating": 4.98, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2096863", "listing_url": "https://www.airbnb.com/rooms/2096863", "name": "LUXURIOUS APARTMENT NEAR US EMBASSY", "host_id": "4434520", "host_name": "Giannitsa", "host_is_superhost": "f", "neighbourhood_cleansed": "ΚΟΛΩΝΑΚΙ", "latitude": 37.982586, "longitude": 23.752316, "room_type": "Entire home/apt", "accommodates": 5.0, "bedrooms": 2.0, "beds": 2.0, "price": 160.14, "number_of_reviews": 12.0, "review_scores_rating": 5.0, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2133917", "listing_url": "https://www.airbnb.com/rooms/2133917", "name": "\"Acro.Pool\" Private Heated Pool w/ Acropolis View", "host_id": "10888595", "host_name": "Haris", "host_is_superhost": "t", "neighbourhood_cleansed": "ΑΚΑΔΗΜΙΑ ΠΛΑΤΩΝΟΣ", "latitude": 37.98691, "longitude": 23.71444, "room_type": "Entire home/apt", "accommodates": 10.0, "bedrooms": 3.0, "beds": 4.0, "price": 256.0, "number_of_reviews": 476.0, "review_scores_rating": 4.7, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 2.0}, {"id": "2180753", "listing_url": "https://www.airbnb.com/rooms/2180753", "name": "Vibrant Exarchia Flat", "host_id": "4207339", "host_name": "Michael", "host_is_superhost": "t", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.984822, "longitude": 23.73592, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 1.0, "beds": 2.0, "price": 97.17, "number_of_reviews": 37.0, "review_scores_rating": 4.97, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2211469", "listing_url": "https://www.airbnb.com/rooms/2211469", "name": "Γκαρσονιέρα 3ου με θέα Ακρόπολη", "host_id": "11281865", "host_name": "Aikaterini", "host_is_superhost": "f", "neighbourhood_cleansed": "ΝΕΟΣ ΚΟΣΜΟΣ", "latitude": 37.96582, "longitude": 23.73245, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 74.4, "number_of_reviews": 0.0, "review_scores_rating": 0.0, "region_origen": "Atenas", "has_no_reviews": 1, "bathrooms_num": 1.0}, {"id": "2266094", "listing_url": "https://www.airbnb.com/rooms/2266094", "name": "Luxurious flat with Acropolis & Lycabettus view", "host_id": "3519983", "host_name": "Alexandra", "host_is_superhost": "f", "neighbourhood_cleansed": "ΓΚΥΖΗ", "latitude": 37.99214, "longitude": 23.74923, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 2.0, "beds": 2.0, "price": 116.4, "number_of_reviews": 51.0, "review_scores_rating": 4.98, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 2.0}, {"id": "2299339", "listing_url": "https://www.airbnb.com/rooms/2299339", "name": "One block away from the Akropolis.", "host_id": "11745220", "host_name": "Andronike", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΟΥΚΑΚΙ-ΜΑΚΡΥΓΙΑΝΝΗ", "latitude": 37.9674, "longitude": 23.72522, "room_type": "Entire home/apt", "accommodates": 5.0, "bedrooms": 2.0, "beds": 5.0, "price": 95.0, "number_of_reviews": 562.0, "review_scores_rating": 4.78, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2305770", "listing_url": "https://www.airbnb.com/rooms/2305770", "name": "Acropolis walk · Koukaki", "host_id": "11777249", "host_name": "Maria Vesna", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΟΥΚΑΚΙ-ΜΑΚΡΥΓΙΑΝΝΗ", "latitude": 37.96427, "longitude": 23.72065, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 1.0, "price": 74.2, "number_of_reviews": 611.0, "review_scores_rating": 4.87, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2322698", "listing_url": "https://www.airbnb.com/rooms/2322698", "name": "Classical Charm & Soulful Wit - 1869 Athens", "host_id": "9679915", "host_name": "Tassos", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.979805, "longitude": 23.725061, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 2.0, "price": 202.0, "number_of_reviews": 153.0, "review_scores_rating": 4.93, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2513822", "listing_url": "https://www.airbnb.com/rooms/2513822", "name": "Apartment in the sky!", "host_id": "12867392", "host_name": "Theodore", "host_is_superhost": "t", "neighbourhood_cleansed": "ΝΕΟΣ ΚΟΣΜΟΣ", "latitude": 37.9577, "longitude": 23.72516, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 0.0, "beds": 1.0, "price": 136.0, "number_of_reviews": 562.0, "review_scores_rating": 4.95, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2534822", "listing_url": "https://www.airbnb.com/rooms/2534822", "name": "Athens center, artist's apt. for 4", "host_id": "12981170", "host_name": "Manolis", "host_is_superhost": "f", "neighbourhood_cleansed": "ΛΥΚΑΒΗΤΤΟΣ", "latitude": 37.98554, "longitude": 23.74768, "room_type": "Entire home/apt", "accommodates": 5.0, "bedrooms": 2.0, "beds": 3.0, "price": 93.33, "number_of_reviews": 150.0, "review_scores_rating": 4.73, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.5}, {"id": "2551382", "listing_url": "https://www.airbnb.com/rooms/2551382", "name": "The Ilisian eclectic 3 suites apartment", "host_id": "13062322", "host_name": "Evi", "host_is_superhost": "t", "neighbourhood_cleansed": "ΙΛΙΣΙΑ", "latitude": 37.97513, "longitude": 23.75287, "room_type": "Entire home/apt", "accommodates": 6.0, "bedrooms": 3.0, "beds": 5.0, "price": 200.5, "number_of_reviews": 198.0, "review_scores_rating": 4.82, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 3.5}, {"id": "2579525", "listing_url": "https://www.airbnb.com/rooms/2579525", "name": "Loft apartment with Acropolis view", "host_id": "13211592", "host_name": "Jul", "host_is_superhost": "t", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.98446, "longitude": 23.74065, "room_type": "Entire home/apt", "accommodates": 5.0, "bedrooms": 1.0, "beds": 3.0, "price": 113.92, "number_of_reviews": 730.0, "review_scores_rating": 4.77, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2618140", "listing_url": "https://www.airbnb.com/rooms/2618140", "name": "Acropolis Masterpiece Mansion", "host_id": "5903928", "host_name": "Katerina", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΟΥΚΑΚΙ-ΜΑΚΡΥΓΙΑΝΝΗ", "latitude": 37.966301, "longitude": 23.723635, "room_type": "Entire home/apt", "accommodates": 8.0, "bedrooms": 3.0, "beds": 5.0, "price": 298.0, "number_of_reviews": 456.0, "review_scores_rating": 4.85, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 2.0}, {"id": "2630315", "listing_url": "https://www.airbnb.com/rooms/2630315", "name": "Possibly, the finest loft in Athens.", "host_id": "13473499", "host_name": "James", "host_is_superhost": "f", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97728, "longitude": 23.72533, "room_type": "Entire home/apt", "accommodates": 8.0, "bedrooms": 3.0, "beds": 6.0, "price": 319.75, "number_of_reviews": 307.0, "review_scores_rating": 4.81, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 2.0}, {"id": "2667852", "listing_url": "https://www.airbnb.com/rooms/2667852", "name": "ATHENS FAMILY APARTMENTS (SOLON)", "host_id": "13656735", "host_name": "Athens Family Apartments", "host_is_superhost": "t", "neighbourhood_cleansed": "ΠΛΑΤΕΙΑ ΑΤΤΙΚΗΣ", "latitude": 37.99263, "longitude": 23.72616, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 2.0, "beds": 4.0, "price": 75.33, "number_of_reviews": 21.0, "review_scores_rating": 4.52, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2668122", "listing_url": "https://www.airbnb.com/rooms/2668122", "name": "ATHENS FAMILY APARTMENTS (ARTEMIS)", "host_id": "13656735", "host_name": "Athens Family Apartments", "host_is_superhost": "t", "neighbourhood_cleansed": "ΠΛΑΤΕΙΑ ΑΤΤΙΚΗΣ", "latitude": 37.99268, "longitude": 23.72619, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 4.0, "price": 72.0, "number_of_reviews": 24.0, "review_scores_rating": 4.42, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2725897", "listing_url": "https://www.airbnb.com/rooms/2725897", "name": "Room and private bathroom in Athens", "host_id": "13948712", "host_name": "Nick", "host_is_superhost": "t", "neighbourhood_cleansed": "ΠΑΓΚΡΑΤΙ", "latitude": 37.97186, "longitude": 23.74679, "room_type": "Private room", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 55.0, "number_of_reviews": 493.0, "review_scores_rating": 4.93, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2751269", "listing_url": "https://www.airbnb.com/rooms/2751269", "name": "Room with privet bathroom in Athens", "host_id": "13948712", "host_name": "Nick", "host_is_superhost": "t", "neighbourhood_cleansed": "ΠΑΓΚΡΑΤΙ", "latitude": 37.97159, "longitude": 23.74666, "room_type": "Private room", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 46.0, "number_of_reviews": 485.0, "review_scores_rating": 4.92, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2767564", "listing_url": "https://www.airbnb.com/rooms/2767564", "name": "Safe & Central in Athens", "host_id": "150427", "host_name": "Antonios", "host_is_superhost": "f", "neighbourhood_cleansed": "ΑΜΠΕΛΟΚΗΠΟΙ", "latitude": 37.99132, "longitude": 23.76899, "room_type": "Entire home/apt", "accommodates": 7.0, "bedrooms": 3.0, "beds": 5.0, "price": 153.5, "number_of_reviews": 73.0, "review_scores_rating": 4.82, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2822037", "listing_url": "https://www.airbnb.com/rooms/2822037", "name": "Amazing terrace view | gorgeous loft near Metro", "host_id": "14437066", "host_name": "Miltiadis", "host_is_superhost": "f", "neighbourhood_cleansed": "ΑΜΠΕΛΟΚΗΠΟΙ", "latitude": 37.99516, "longitude": 23.76532, "room_type": "Entire home/apt", "accommodates": 7.0, "bedrooms": 2.0, "beds": 3.0, "price": 102.0, "number_of_reviews": 79.0, "review_scores_rating": 4.81, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.5}, {"id": "2841806", "listing_url": "https://www.airbnb.com/rooms/2841806", "name": "A Room with a View", "host_id": "14536309", "host_name": "Nausikaa", "host_is_superhost": "f", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97573, "longitude": 23.73259, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 209.5, "number_of_reviews": 475.0, "review_scores_rating": 4.85, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2844923", "listing_url": "https://www.airbnb.com/rooms/2844923", "name": "PENTHOUSE UNDER ACROPOLIS", "host_id": "14090897", "host_name": "TravelStaytion", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97158, "longitude": 23.73024, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 2.0, "beds": 3.0, "price": 362.5, "number_of_reviews": 390.0, "review_scores_rating": 4.93, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2912133", "listing_url": "https://www.airbnb.com/rooms/2912133", "name": "Top roof loft with acropolis view", "host_id": "10996020", "host_name": "Lida", "host_is_superhost": "f", "neighbourhood_cleansed": "ΓΟΥΒΑ", "latitude": 37.961273, "longitude": 23.739862, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 3.0, "price": 131.33, "number_of_reviews": 208.0, "review_scores_rating": 4.9, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2920545", "listing_url": "https://www.airbnb.com/rooms/2920545", "name": "Plaka Garden with Secret Gem", "host_id": "570423", "host_name": "Despoina", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97296, "longitude": 23.72936, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 255.5, "number_of_reviews": 410.0, "review_scores_rating": 4.92, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "2948623", "listing_url": "https://www.airbnb.com/rooms/2948623", "name": "A magnificent view of Acropolis", "host_id": "15017290", "host_name": "Yanni", "host_is_superhost": "t", "neighbourhood_cleansed": "ΒΟΤΑΝΙΚΟΣ", "latitude": 37.977554, "longitude": 23.707117, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 2.0, "beds": 2.0, "price": 95.21, "number_of_reviews": 104.0, "review_scores_rating": 4.87, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "3036157", "listing_url": "https://www.airbnb.com/rooms/3036157", "name": "The Athenian Apartment", "host_id": "15463333", "host_name": "Michael", "host_is_superhost": "t", "neighbourhood_cleansed": "ΜΟΥΣΕΙΟ-ΕΞΑΡΧΕΙΑ-ΝΕΑΠΟΛΗ", "latitude": 37.98625, "longitude": 23.72994, "room_type": "Entire home/apt", "accommodates": 5.0, "bedrooms": 3.0, "beds": 3.0, "price": 209.25, "number_of_reviews": 188.0, "review_scores_rating": 4.98, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 2.0}, {"id": "3107136", "listing_url": "https://www.airbnb.com/rooms/3107136", "name": "#10 #11 | Psyrri \"Meet me Here\" Apartments", "host_id": "2289590", "host_name": "Live In Athens Apartments", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97811, "longitude": 23.72375, "room_type": "Entire home/apt", "accommodates": 5.0, "bedrooms": 1.0, "beds": 3.0, "price": 116.0, "number_of_reviews": 5.0, "review_scores_rating": 4.4, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "3179431", "listing_url": "https://www.airbnb.com/rooms/3179431", "name": "Top of the world! #09 | Psyrri Central Apartments", "host_id": "2289590", "host_name": "Live In Athens Apartments", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97748, "longitude": 23.72498, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 2.0, "price": 139.0, "number_of_reviews": 5.0, "review_scores_rating": 4.8, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 2.0}, {"id": "3179713", "listing_url": "https://www.airbnb.com/rooms/3179713", "name": "Green Green! #08 | Psyrri Central Apartments", "host_id": "2289590", "host_name": "Live In Athens Apartments", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97755, "longitude": 23.72375, "room_type": "Entire home/apt", "accommodates": 5.0, "bedrooms": 1.0, "beds": 3.0, "price": 135.0, "number_of_reviews": 18.0, "review_scores_rating": 4.72, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "3180437", "listing_url": "https://www.airbnb.com/rooms/3180437", "name": "Hello Yellow! #07 | Psyrri Central Apartments", "host_id": "2289590", "host_name": "Live In Athens Apartments", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97958, "longitude": 23.72377, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 2.0, "price": 85.0, "number_of_reviews": 6.0, "review_scores_rating": 4.83, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "3180588", "listing_url": "https://www.airbnb.com/rooms/3180588", "name": "Ground studio #05 | Psyrri Central Apartments", "host_id": "2289590", "host_name": "Live In Athens Apartments", "host_is_superhost": "t", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97957, "longitude": 23.72392, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 79.5, "number_of_reviews": 13.0, "review_scores_rating": 4.69, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "3191191", "listing_url": "https://www.airbnb.com/rooms/3191191", "name": "Apollo Historical Center apt.", "host_id": "1826598", "host_name": "Apartments Historical Centre", "host_is_superhost": "f", "neighbourhood_cleansed": "ΕΜΠΟΡΙΚΟ ΤΡΙΓΩΝΟ-ΠΛΑΚΑ", "latitude": 37.97978, "longitude": 23.72849, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 1.0, "beds": 1.0, "price": 123.0, "number_of_reviews": 189.0, "review_scores_rating": 4.79, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "3402831", "listing_url": "https://www.airbnb.com/rooms/3402831", "name": "Steps away from Athens Hilton", "host_id": "8666138", "host_name": "Greg", "host_is_superhost": "t", "neighbourhood_cleansed": "ΙΛΙΣΙΑ", "latitude": 37.97464, "longitude": 23.74885, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 2.0, "beds": 3.0, "price": 141.5, "number_of_reviews": 193.0, "review_scores_rating": 4.88, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "3431705", "listing_url": "https://www.airbnb.com/rooms/3431705", "name": "2 levels flat in centre of Athens", "host_id": "14538849", "host_name": "Aris", "host_is_superhost": "t", "neighbourhood_cleansed": "ΘΗΣΕΙΟ", "latitude": 37.97813, "longitude": 23.72186, "room_type": "Entire home/apt", "accommodates": 8.0, "bedrooms": 3.0, "beds": 4.0, "price": 122.0, "number_of_reviews": 1124.0, "review_scores_rating": 4.85, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 3.0}, {"id": "3433913", "listing_url": "https://www.airbnb.com/rooms/3433913", "name": "A Cozy 2bdr Apt in Kolonaki of Athens", "host_id": "748818", "host_name": "George", "host_is_superhost": "f", "neighbourhood_cleansed": "ΚΟΛΩΝΑΚΙ", "latitude": 37.97884, "longitude": 23.73783, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 1.0, "price": 130.5, "number_of_reviews": 104.0, "review_scores_rating": 4.52, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "3435208", "listing_url": "https://www.airbnb.com/rooms/3435208", "name": "Central Apt Private Balcony & Rooftop Access - CT1", "host_id": "1418201", "host_name": "D & Y Boutique Athens", "host_is_superhost": "t", "neighbourhood_cleansed": "ΚΕΡΑΜΕΙΚΟΣ", "latitude": 37.98005, "longitude": 23.72356, "room_type": "Entire home/apt", "accommodates": 3.0, "bedrooms": 1.0, "beds": 2.0, "price": 95.2, "number_of_reviews": 129.0, "review_scores_rating": 4.77, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "3455329", "listing_url": "https://www.airbnb.com/rooms/3455329", "name": "Center 4, Penthouse, Metro in 40m", "host_id": "640163", "host_name": "Nikolaos", "host_is_superhost": "f", "neighbourhood_cleansed": "ΠΛΑΤΕΙΑ ΑΤΤΙΚΗΣ", "latitude": 37.99229, "longitude": 23.7298, "room_type": "Entire home/apt", "accommodates": 4.0, "bedrooms": 2.0, "beds": 3.0, "price": 133.0, "number_of_reviews": 30.0, "review_scores_rating": 4.53, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}, {"id": "3489508", "listing_url": "https://www.airbnb.com/rooms/3489508", "name": "Cozy Terrace  Acropolis view!", "host_id": "7672336", "host_name": "Lefteris", "host_is_superhost": "f", "neighbourhood_cleansed": "ΚΕΡΑΜΕΙΚΟΣ", "latitude": 37.980514, "longitude": 23.717129, "room_type": "Entire home/apt", "accommodates": 2.0, "bedrooms": 1.0, "beds": 5.0, "price": 80.0, "number_of_reviews": 172.0, "review_scores_rating": 4.72, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.5}, {"id": "3517805", "listing_url": "https://www.airbnb.com/rooms/3517805", "name": "Modern apartment near Acropolis peaceful location.", "host_id": "17712465", "host_name": "Zois", "host_is_superhost": "t", "neighbourhood_cleansed": "ΠΕΤΡΑΛΩΝΑ", "latitude": 37.9707, "longitude": 23.71315, "room_type": "Entire home/apt", "accommodates": 6.0, "bedrooms": 2.0, "beds": 3.0, "price": 134.33, "number_of_reviews": 112.0, "review_scores_rating": 4.78, "region_origen": "Atenas", "has_no_reviews": 0, "bathrooms_num": 1.0}]};
+
+function numero(v) {
+    if (v === null || v === undefined || !Number.isFinite(Number(v))) {
+        return "N/D";
+    }
+    return Number(v).toLocaleString("es-ES", {
+        maximumFractionDigits: 2
+    });
+}
+
+function escapar(valor) {
+    return String(valor ?? "").replace(/[&<>"']/g, c => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    }[c]));
+}
+
+document.getElementById("subtitulo").textContent =
+    D.total.toLocaleString("es-ES") + " registros analizados";
+
+document.getElementById("archivo").textContent =
+    "Archivo: " + D.archivo +
+    " | Columnas: " + D.columnas.length;
+
+const indicadores = [
+    ["Total de alojamientos", numero(D.total)],
+    ["Precio medio", numero(D.precioMedio)],
+    ["Precio mediano", numero(D.precioMediano)],
+    ["Precio mínimo", numero(D.precioMinimo)],
+    ["Precio máximo", numero(D.precioMaximo)],
+    ["Valoración media", numero(D.ratingMedio)]
+];
+
+document.getElementById("kpis").innerHTML = indicadores.map(x =>
+    `<article class="card">
+        <div class="kpi-label">${x[0]}</div>
+        <div class="kpi-value">${x[1]}</div>
+    </article>`
+).join("");
+
+function crearGrafico(id, tipo, filas, etiqueta, horizontal=false) {
+    if (!filas || filas.length === 0) {
+        return false;
+    }
+
+    new Chart(document.getElementById(id), {
+        type: tipo,
+        data: {
+            labels: filas.map(x => x.label),
+            datasets: [{
+                label: etiqueta,
+                data: filas.map(x => x.value),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: horizontal ? "y" : "x",
+            plugins: {
+                legend: {
+                    display: tipo === "doughnut"
+                }
+            },
+            scales: tipo === "doughnut" ? {} : {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    return true;
+}
+
+if (!crearGrafico("graficoRegion", "bar",
+                  D.datosRegion, "Alojamientos", true)) {
+    document.getElementById("sinRegion").hidden = false;
+    document.getElementById("graficoRegion").hidden = true;
+}
+
+if (!crearGrafico("graficoPrecioRegion", "bar",
+                  D.datosPrecioRegion, "Precio medio", true)) {
+    document.getElementById("sinPrecioRegion").hidden = false;
+    document.getElementById("graficoPrecioRegion").hidden = true;
+}
+
+if (!crearGrafico("graficoPrecios", "bar",
+                  D.datosHistograma, "Alojamientos")) {
+    document.getElementById("sinPrecios").hidden = false;
+    document.getElementById("graficoPrecios").hidden = true;
+}
+
+if (!crearGrafico("graficoTipo", "doughnut",
+                  D.datosTipo, "Alojamientos")) {
+    document.getElementById("sinTipo").hidden = false;
+    document.getElementById("graficoTipo").hidden = true;
+}
+
+// Tabla del Top 10
+const cuerpoTop = document.querySelector("#tablaTop tbody");
+
+cuerpoTop.innerHTML = D.top.map((fila, i) => `
+    <tr>
+        <td>${i + 1}</td>
+        <td>${escapar(fila.nombre)}</td>
+        <td>${escapar(fila.region)}</td>
+        <td>${escapar(fila.tipo)}</td>
+        <td>${numero(fila.precio)}</td>
+        <td>${numero(fila.rating)}</td>
+    </tr>
+`).join("");
+
+// Tabla general
+const cabecera = document.querySelector("#tablaDatos thead");
+const cuerpo = document.querySelector("#tablaDatos tbody");
+
+cabecera.innerHTML = "<tr>" + D.columnas.map(col =>
+    `<th>${escapar(col)}</th>`
+).join("") + "</tr>";
+
+function pintarTabla(filtro = "") {
+    const q = filtro.toLowerCase();
+
+    const filas = D.tabla.filter(fila =>
+        D.columnas.some(col =>
+            String(fila[col] ?? "").toLowerCase().includes(q)
+        )
+    );
+
+    cuerpo.innerHTML = filas.map(fila =>
+        "<tr>" + D.columnas.map(col =>
+            `<td>${escapar(fila[col])}</td>`
+        ).join("") + "</tr>"
+    ).join("");
+}
+
+pintarTabla();
+
+document.getElementById("busqueda").addEventListener("input", e => {
+    pintarTabla(e.target.value);
+});
+</script>
+
+</body>
+</html>
