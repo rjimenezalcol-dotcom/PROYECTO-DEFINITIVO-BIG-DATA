@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-#comentario prueba 13:14
+#comentario prueba 14.04
 # Cargamos el dataset preprocesado y limpio
 #df = pd.read_csv("airbnb_grecia_clean.csv", low_memory=False)
 # En lugar de pd.read_csv('datos_limpios.csv') 
